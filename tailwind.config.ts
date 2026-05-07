@@ -10,16 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          dark: "#0d1b2a",
-          navy: "#0f2d52",
-          blue: "#1e40af",
-          lightblue: "#3b82f6",
-          gold: "#f59e0b",
-          gold2: "#fbbf24",
-          green: "#10b981",
-          red: "#ef4444",
-          card: "#111827",
-          border: "#1e3a5f",
+          dark:      "#07091a",
+          navy:      "#001489",
+          blue:      "#0033a0",
+          lightblue: "#4169e1",
+          red:       "#c8102e",
+          gold:      "#FFB81C",
+          gold2:     "#ffd060",
+          green:     "#10b981",
+          teal:      "#00b2a9",
+          card:      "#0b0d22",
+          border:    "#0d1e6e",
         },
       },
       fontFamily: {
@@ -27,32 +28,35 @@ const config: Config = {
       },
       backgroundImage: {
         "hero-gradient":
-          "linear-gradient(135deg, #0d1b2a 0%, #0f2d52 50%, #1e3a5f 100%)",
+          "linear-gradient(150deg, #07091a 0%, #001230 40%, #001489 75%, #0a1060 100%)",
         "card-gradient":
-          "linear-gradient(135deg, rgba(30,64,175,0.2) 0%, rgba(15,45,82,0.4) 100%)",
-        "gold-gradient": "linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)",
+          "linear-gradient(135deg, rgba(0,20,137,0.15) 0%, rgba(7,9,26,0.5) 100%)",
+        "gold-gradient":
+          "linear-gradient(135deg, #FFB81C 0%, #ffd060 100%)",
+        "wc-gradient":
+          "linear-gradient(135deg, #001489 0%, #c8102e 100%)",
       },
       animation: {
-        "fade-up": "fadeUp 0.6s ease-out forwards",
-        "fade-in": "fadeIn 0.5s ease-out forwards",
-        float: "float 3s ease-in-out infinite",
-        shimmer: "shimmer 2s linear infinite",
+        "fade-up":  "fadeUp 0.6s ease-out forwards",
+        "fade-in":  "fadeIn 0.5s ease-out forwards",
+        float:      "float 3s ease-in-out infinite",
+        shimmer:    "shimmer 2s linear infinite",
       },
       keyframes: {
         fadeUp: {
-          "0%": { opacity: "0", transform: "translateY(30px)" },
+          "0%":   { opacity: "0", transform: "translateY(30px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         fadeIn: {
-          "0%": { opacity: "0" },
+          "0%":   { opacity: "0" },
           "100%": { opacity: "1" },
         },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
+          "50%":       { transform: "translateY(-10px)" },
         },
         shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
+          "0%":   { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
       },

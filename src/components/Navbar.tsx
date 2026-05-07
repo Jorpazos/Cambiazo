@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Trophy, ShoppingBag, ArrowLeftRight, LogIn, UserPlus } from "lucide-react";
+import { Menu, X, LogIn, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import LogoMark from "@/components/LogoMark";
 
 const NAV_LINKS = [
   { href: "/#como-funciona", label: "Cómo Funciona" },
@@ -20,14 +21,12 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue to-blue-400 shadow-lg shadow-blue-900/40 group-hover:shadow-blue-700/50 transition-all duration-200">
-              <Trophy className="h-5 w-5 text-white" />
-            </div>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <LogoMark className="h-9 w-9 drop-shadow-lg group-hover:scale-105 transition-transform duration-200" />
             <span className="text-xl font-black tracking-tight text-white">
               Cambia<span className="text-brand-gold">zo</span>
             </span>
-            <span className="hidden sm:inline-block rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-bold text-amber-400 border border-amber-500/30">
+            <span className="hidden sm:inline-block rounded-md bg-brand-gold/15 px-2 py-0.5 text-xs font-bold text-brand-gold border border-brand-gold/25">
               Mundial 2026
             </span>
           </Link>
@@ -71,7 +70,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div
         className={cn(
-          "md:hidden border-t border-white/5 bg-brand-dark/95 backdrop-blur-xl overflow-hidden transition-all duration-300",
+          "md:hidden border-t border-white/5 bg-[#07091a]/95 backdrop-blur-xl overflow-hidden transition-all duration-300",
           open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}
       >

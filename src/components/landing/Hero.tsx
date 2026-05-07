@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Users, ArrowLeftRight, Star, Zap } from "lucide-react";
+import { ArrowRight, Users, Zap } from "lucide-react";
 
+// Datos reales del álbum y torneo FIFA World Cup 2026
 const STATS = [
-  { label: "Usuarios activos", value: "12.400+" },
-  { label: "Intercambios realizados", value: "89.000+" },
-  { label: "Figuritas disponibles", value: "4.200+" },
-  { label: "Provincias", value: "24" },
+  { label: "Figuritas en el álbum", value: "980",  note: "Panini oficial" },
+  { label: "Selecciones participantes", value: "48", note: "Récord histórico" },
+  { label: "Países sede", value: "3",   note: "USA · CAN · MEX" },
+  { label: "Partidos del torneo", value: "104",  note: "Fase de grupos + eliminatorias" },
 ];
 
 export default function Hero() {
@@ -15,16 +16,21 @@ export default function Hero() {
     <section className="relative overflow-hidden bg-hero-gradient">
       {/* Decorative background blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
-        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-blue-900/20 blur-3xl" />
-        {/* Grid pattern */}
+        {/* Blue blob — FIFA navy */}
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-brand-navy/30 blur-3xl" />
+        {/* Red blob — FIFA red */}
+        <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-brand-red/15 blur-3xl" />
+        {/* Gold accent */}
+        <div className="absolute top-1/3 right-1/4 h-48 w-48 rounded-full bg-brand-gold/8 blur-2xl" />
+        {/* Center glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-brand-navy/20 blur-3xl" />
+        {/* Subtle grid */}
         <div
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(99,179,237,0.3) 1px, transparent 1px), linear-gradient(to right, rgba(99,179,237,0.3) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
+              "linear-gradient(rgba(255,184,28,0.6) 1px, transparent 1px), linear-gradient(to right, rgba(255,184,28,0.6) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
           }}
         />
       </div>
@@ -32,16 +38,16 @@ export default function Hero() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 lg:pt-32 lg:pb-36">
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-400">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-4 py-1.5 text-sm font-semibold text-brand-gold">
             <Zap className="h-3.5 w-3.5" />
-            <span>La comunidad del álbum del Mundial 2026</span>
+            <span>La comunidad del álbum FIFA World Cup 2026™</span>
           </div>
 
           {/* Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-none">
             Completá tu
             <br />
-            <span className="bg-gradient-to-r from-brand-gold to-amber-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-gold via-yellow-300 to-brand-gold bg-clip-text text-transparent">
               álbum
             </span>{" "}
             juntos
@@ -82,15 +88,18 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats — datos reales del torneo */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4">
           {STATS.map((stat) => (
             <div
               key={stat.label}
-              className="glass-card p-5 text-center hover:border-brand-blue/30 transition-colors duration-300"
+              className="glass-card p-5 text-center hover:border-brand-navy/50 transition-colors duration-300 group"
             >
-              <p className="text-2xl sm:text-3xl font-black text-white">{stat.value}</p>
-              <p className="mt-1 text-xs sm:text-sm text-blue-200/60 font-medium">{stat.label}</p>
+              <p className="text-2xl sm:text-3xl font-black text-white group-hover:text-brand-gold transition-colors duration-200">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs sm:text-sm text-blue-200/70 font-semibold">{stat.label}</p>
+              <p className="mt-0.5 text-[10px] text-blue-200/35 font-medium">{stat.note}</p>
             </div>
           ))}
         </div>

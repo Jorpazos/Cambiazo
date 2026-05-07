@@ -8,77 +8,70 @@
   --font-inter: 'Inter', system-ui, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-inter);
-  background-color: #0d1b2a;
+  background-color: #07091a;
   color: #f0f4f8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0d1b2a;
-}
-::-webkit-scrollbar-thumb {
-  background: #1e40af;
-  border-radius: 3px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #07091a; }
+::-webkit-scrollbar-thumb { background: #001489; border-radius: 3px; }
 
 @layer components {
   .glass-card {
-    @apply backdrop-blur-sm bg-white/5 border border-white/10 rounded-2xl;
+    @apply backdrop-blur-sm bg-white/4 border border-white/8 rounded-2xl;
   }
 
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
-      bg-gradient-to-r from-brand-blue to-blue-500 text-white
-      hover:from-blue-600 hover:to-blue-400 transition-all duration-200
-      shadow-lg shadow-blue-900/30 hover:shadow-blue-800/40 hover:scale-[1.02] active:scale-[0.98];
+      bg-gradient-to-r from-brand-navy to-brand-blue text-white
+      hover:from-blue-800 hover:to-brand-blue transition-all duration-200
+      shadow-lg shadow-blue-950/40 hover:shadow-blue-900/50 hover:scale-[1.02] active:scale-[0.98];
   }
 
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
-      bg-gradient-to-r from-amber-500 to-yellow-400 text-gray-900
-      hover:from-amber-400 hover:to-yellow-300 transition-all duration-200
-      shadow-lg shadow-amber-900/30 hover:scale-[1.02] active:scale-[0.98];
+      bg-gradient-to-r from-brand-gold to-brand-gold2 text-gray-900
+      hover:from-yellow-400 hover:to-brand-gold2 transition-all duration-200
+      shadow-lg shadow-yellow-900/30 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-red {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+      bg-gradient-to-r from-brand-red to-red-500 text-white
+      hover:from-red-700 hover:to-red-400 transition-all duration-200
+      shadow-lg shadow-red-950/30 hover:scale-[1.02] active:scale-[0.98];
   }
 
   .btn-outline {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
-      border border-white/20 text-white bg-white/5
-      hover:bg-white/10 hover:border-white/30 transition-all duration-200;
+      border border-white/15 text-white bg-white/5
+      hover:bg-white/10 hover:border-white/25 transition-all duration-200;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40
-      focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent
+    @apply w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30
+      focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent
       transition-all duration-200;
   }
 
   .section-title {
-    @apply text-3xl md:text-4xl font-bold text-white;
+    @apply text-3xl md:text-4xl font-black text-white;
   }
 
   .section-subtitle {
-    @apply text-base md:text-lg text-blue-200/70 mt-3 max-w-2xl;
+    @apply text-base md:text-lg text-blue-200/60 mt-3 max-w-2xl;
   }
 
   .badge-cambio {
     @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold
-      bg-brand-blue/80 text-white border border-blue-500/30;
+      bg-brand-navy/80 text-white border border-blue-600/30;
   }
 
   .badge-vendo {
@@ -88,6 +81,6 @@ body {
 
   .badge-busco {
     @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold
-      bg-amber-500/80 text-white border border-amber-400/30;
+      bg-brand-red/80 text-white border border-red-500/30;
   }
 }

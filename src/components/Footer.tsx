@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Trophy, Instagram, Twitter, Facebook, Mail } from "lucide-react";
+import { Instagram, Twitter, Facebook, Mail } from "lucide-react";
+import LogoMark from "@/components/LogoMark";
 
 export default function Footer() {
   return (
@@ -8,10 +9,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue to-blue-400">
-                <Trophy className="h-5 w-5 text-white" />
-              </div>
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <LogoMark className="h-9 w-9" />
               <span className="text-xl font-black text-white">
                 Cambia<span className="text-brand-gold">zo</span>
               </span>
