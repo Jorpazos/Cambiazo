@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cambiamundial2026.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cambiazomundial2026.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

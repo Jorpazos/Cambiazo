@@ -8,7 +8,7 @@ import FAQ from "@/components/landing/FAQ";
 import ContactSection from "@/components/landing/ContactSection";
 import { FEATURED_LISTINGS, STORE_PRODUCTS, FAQ_ITEMS } from "@/lib/mockData";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cambiamundial2026.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cambiazomundial2026.vercel.app";
 
 export const metadata: Metadata = {
   title: "Cambiazo – Intercambiá Figuritas del Mundial 2026 | Panini Argentina",
