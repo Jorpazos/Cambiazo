@@ -1,27 +1,252 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Package, Image as ImageIcon, Plus, Edit3, Trash2, BarChart3, ShoppingBag, MessageSquare, Eye, Upload } from "lucide-react";
+import {
+  Users, Package, Image as ImageIcon, Plus, Edit3, Trash2,
+  BarChart3, ShoppingBag, MessageSquare, Eye, Upload,
+  ShoppingCart, CheckCircle, Truck, XCircle,
+} from "lucide-react";
 import { FEATURED_LISTINGS, STORE_PRODUCTS } from "@/lib/mockData";
 import { formatPrice, cn } from "@/lib/utils";
 
-type AdminTab = "dashboard" | "players" | "listings" | "products" | "messages" | "users";
+type AdminTab = "dashboard" | "ventas" | "players" | "listings" | "products" | "messages" | "users";
+type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+
+interface MockOrder {
+  id: number;
+  status: OrderStatus;
+  total: number;
+  createdAt: string;
+  user: { name: string; email: string; province: string };
+  product: string;
+}
 
 const TABS: { id: AdminTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-  { id: "players", label: "Jugadores", icon: ImageIcon },
-  { id: "listings", label: "Publicaciones", icon: Package },
-  { id: "products", label: "Tienda", icon: ShoppingBag },
-  { id: "messages", label: "Mensajes", icon: MessageSquare },
-  { id: "users", label: "Usuarios", icon: Users },
+  { id: "dashboard", label: "Dashboard",     icon: BarChart3 },
+  { id: "ventas",    label: "Ventas",        icon: ShoppingCart },
+  { id: "players",   label: "Jugadores",     icon: ImageIcon },
+  { id: "listings",  label: "Publicaciones", icon: Package },
+  { id: "products",  label: "Tienda",        icon: ShoppingBag },
+  { id: "messages",  label: "Mensajes",      icon: MessageSquare },
+  { id: "users",     label: "Usuarios",      icon: Users },
 ];
 
 const MOCK_STATS = [
-  { label: "Usuarios totales", value: "12.421", change: "+84 esta semana", color: "text-blue-400" },
-  { label: "Publicaciones activas", value: "4.283", change: "+127 hoy", color: "text-green-400" },
-  { label: "Mensajes recibidos", value: "38", change: "12 sin leer", color: "text-amber-400" },
-  { label: "Ventas del mes", value: "$284.000", change: "+23% vs mes anterior", color: "text-violet-400" },
+  { label: "Usuarios totales",     value: "12.421", change: "+84 esta semana",      color: "text-blue-400" },
+  { label: "Publicaciones activas",value: "4.283",  change: "+127 hoy",             color: "text-green-400" },
+  { label: "Mensajes recibidos",   value: "38",     change: "12 sin leer",          color: "text-amber-400" },
+  { label: "Ventas del mes",       value: "$284.000",change: "+23% vs mes anterior",color: "text-violet-400" },
 ];
+
+const INITIAL_ORDERS: MockOrder[] = [
+  { id: 1001, status: "PENDING",   total: 2500,  createdAt: "2026-05-08T10:30:00Z", user: { name: "Pablo Mendez",    email: "pablo@mail.com",  province: "Bs. As."  }, product: "Pack x25 Figuritas"   },
+  { id: 1002, status: "CONFIRMED", total: 4500,  createdAt: "2026-05-07T15:45:00Z", user: { name: "Sofía Rodríguez", email: "sofia@mail.com",  province: "Córdoba"  }, product: "Pack x50 Figuritas"   },
+  { id: 1003, status: "SHIPPED",   total: 600,   createdAt: "2026-05-06T09:20:00Z", user: { name: "Lucas González",  email: "lucas@mail.com",  province: "Santa Fe" }, product: "Sobre x5 Figuritas"   },
+  { id: 1004, status: "DELIVERED", total: 3500,  createdAt: "2026-05-05T14:10:00Z", user: { name: "María López",     email: "maria@mail.com",  province: "Mendoza"  }, product: "Álbum Vacío Oficial"  },
+  { id: 1005, status: "PENDING",   total: 95000, createdAt: "2026-05-08T08:00:00Z", user: { name: "Carlos Ruiz",     email: "carlos@mail.com", province: "Tucumán"  }, product: "Álbum Completo"       },
+  { id: 1006, status: "CANCELLED", total: 1200,  createdAt: "2026-05-04T11:30:00Z", user: { name: "Ana Martínez",    email: "ana@mail.com",    province: "Rosario"  }, product: "Sobre x5 Figuritas"   },
+  { id: 1007, status: "CONFIRMED", total: 95000, createdAt: "2026-05-03T16:00:00Z", user: { name: "Martín Sosa",     email: "martin@mail.com", province: "Córdoba"  }, product: "Álbum Completo"       },
+  { id: 1008, status: "PENDING",   total: 600,   createdAt: "2026-05-08T11:55:00Z", user: { name: "Laura Giménez",   email: "laura@mail.com",  province: "Bs. As."  }, product: "Sobre x5 Figuritas"   },
+];
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING:   "Pendiente",
+  CONFIRMED: "Confirmado",
+  SHIPPED:   "En camino",
+  DELIVERED: "Entregado",
+  CANCELLED: "Cancelado",
+};
+
+const STATUS_COLORS: Record<OrderStatus, string> = {
+  PENDING:   "bg-amber-500/15 text-amber-400 border border-amber-500/25",
+  CONFIRMED: "bg-blue-500/15 text-blue-400 border border-blue-500/25",
+  SHIPPED:   "bg-violet-500/15 text-violet-400 border border-violet-500/25",
+  DELIVERED: "bg-green-500/15 text-green-400 border border-green-500/25",
+  CANCELLED: "bg-red-500/15 text-red-400 border border-red-500/25",
+};
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleString("es-AR", {
+    day: "2-digit", month: "2-digit", year: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+
+type StatusFilter = OrderStatus | "ALL";
+
+function VentasTab() {
+  const [orders, setOrders] = useState<MockOrder[]>(INITIAL_ORDERS);
+  const [filter, setFilter]  = useState<StatusFilter>("ALL");
+  const [busy,   setBusy]    = useState<number | null>(null);
+
+  const filtered  = filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
+  const pending   = orders.filter((o) => o.status === "PENDING").length;
+  const delivered = orders.filter((o) => o.status === "DELIVERED").length;
+  const revenue   = orders.filter((o) => o.status !== "CANCELLED").reduce((s, o) => s + o.total, 0);
+
+  function advance(id: number, next: OrderStatus) {
+    setBusy(id);
+    // In production: fetch(`/api/admin/orders?id=${id}`, { method: "PATCH", body: JSON.stringify({ status: next }) })
+    setTimeout(() => {
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: next } : o)));
+      setBusy(null);
+    }, 400);
+  }
+
+  const FILTERS: { label: string; value: StatusFilter }[] = [
+    { label: "Todos",       value: "ALL"       },
+    { label: "Pendientes",  value: "PENDING"   },
+    { label: "Confirmados", value: "CONFIRMED" },
+    { label: "En camino",   value: "SHIPPED"   },
+    { label: "Entregados",  value: "DELIVERED" },
+    { label: "Cancelados",  value: "CANCELLED" },
+  ];
+
+  return (
+    <div className="space-y-5">
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="glass-card p-4 text-center">
+          <p className="text-xs text-blue-200/50 mb-1">Pendientes de atención</p>
+          <p className="text-3xl font-black text-amber-400">{pending}</p>
+        </div>
+        <div className="glass-card p-4 text-center">
+          <p className="text-xs text-blue-200/50 mb-1">Ingresos totales</p>
+          <p className="text-2xl font-black text-green-400">{formatPrice(revenue)}</p>
+        </div>
+        <div className="glass-card p-4 text-center">
+          <p className="text-xs text-blue-200/50 mb-1">Órdenes entregadas</p>
+          <p className="text-3xl font-black text-white">{delivered}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setFilter(f.value)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
+              filter === f.value
+                ? "bg-brand-blue/30 text-white border-brand-blue/50"
+                : "bg-white/5 text-blue-200/60 border-white/10 hover:bg-white/10"
+            )}
+          >
+            {f.label}
+            {f.value !== "ALL" && (
+              <span className="ml-1.5 opacity-50">
+                ({orders.filter((o) => o.status === f.value).length})
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="glass-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/5">
+                {["#Orden", "Cliente", "Producto", "Total", "Fecha", "Estado", "Acciones"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-blue-200/50 uppercase tracking-wider">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-blue-200/30">
+                    No hay órdenes con este estado
+                  </td>
+                </tr>
+              )}
+              {filtered.map((order) => (
+                <tr
+                  key={order.id}
+                  className={cn(
+                    "border-b border-white/5 transition-all duration-300",
+                    busy === order.id ? "opacity-40 pointer-events-none" : "hover:bg-white/[0.02]"
+                  )}
+                >
+                  <td className="px-4 py-3 font-mono text-xs font-bold text-brand-gold">#{order.id}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-white text-xs">{order.user.name}</p>
+                    <p className="text-[11px] text-blue-200/40">{order.user.email}</p>
+                    <p className="text-[11px] text-blue-200/40">{order.user.province}</p>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-blue-200/70 max-w-[140px]">{order.product}</td>
+                  <td className="px-4 py-3 font-black text-white text-sm whitespace-nowrap">{formatPrice(order.total)}</td>
+                  <td className="px-4 py-3 text-[11px] text-blue-200/40 whitespace-nowrap">{fmtDate(order.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <span className={cn("text-xs font-bold px-2 py-1 rounded-full", STATUS_COLORS[order.status])}>
+                      {STATUS_LABELS[order.status]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1.5">
+                      {order.status === "PENDING" && (
+                        <>
+                          <button
+                            onClick={() => advance(order.id, "CONFIRMED")}
+                            title="Confirmar orden"
+                            className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                          >
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => advance(order.id, "CANCELLED")}
+                            title="Cancelar"
+                            className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+                      {order.status === "CONFIRMED" && (
+                        <>
+                          <button
+                            onClick={() => advance(order.id, "SHIPPED")}
+                            title="Marcar como enviado"
+                            className="p-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors"
+                          >
+                            <Truck className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => advance(order.id, "CANCELLED")}
+                            title="Cancelar"
+                            className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+                      {order.status === "SHIPPED" && (
+                        <button
+                          onClick={() => advance(order.id, "DELIVERED")}
+                          title="Marcar como entregado"
+                          className="p-1.5 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {(order.status === "DELIVERED" || order.status === "CANCELLED") && (
+                        <span className="text-xs text-blue-200/20">—</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function DashboardTab() {
   return (
@@ -30,7 +255,7 @@ function DashboardTab() {
         {MOCK_STATS.map((s) => (
           <div key={s.label} className="glass-card p-5">
             <p className="text-xs text-blue-200/50 mb-1">{s.label}</p>
-            <p className={`text-2xl font-black text-white`}>{s.value}</p>
+            <p className="text-2xl font-black text-white">{s.value}</p>
             <p className={`text-xs mt-1 ${s.color}`}>{s.change}</p>
           </div>
         ))}
@@ -51,7 +276,7 @@ function DashboardTab() {
                 </div>
               </div>
               <span className={cn("text-xs font-bold px-2 py-1 rounded-full", {
-                "bg-blue-500/20 text-blue-400": l.type === "CAMBIO",
+                "bg-blue-500/20 text-blue-400":   l.type === "CAMBIO",
                 "bg-green-500/20 text-green-400": l.type === "VENDO",
                 "bg-amber-500/20 text-amber-400": l.type === "BUSCO",
               })}>
@@ -90,11 +315,11 @@ function PlayersTab() {
           <h4 className="font-bold text-white mb-4">Nuevo jugador</h4>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { key: "name", label: "Nombre completo", placeholder: "ej. Lionel Messi" },
-              { key: "country", label: "País / Selección", placeholder: "ej. Argentina" },
-              { key: "number", label: "Nro. figurita", placeholder: "ej. 42" },
-              { key: "position", label: "Posición", placeholder: "ej. Delantero" },
-              { key: "section", label: "Código sección", placeholder: "ej. ARG" },
+              { key: "name",     label: "Nombre completo", placeholder: "ej. Lionel Messi" },
+              { key: "country",  label: "País / Selección", placeholder: "ej. Argentina" },
+              { key: "number",   label: "Nro. figurita",    placeholder: "ej. 42" },
+              { key: "position", label: "Posición",         placeholder: "ej. Delantero" },
+              { key: "section",  label: "Código sección",   placeholder: "ej. ARG" },
             ].map(({ key, label, placeholder }) => (
               <div key={key}>
                 <label className="block text-xs font-medium text-blue-200/60 mb-1.5">{label}</label>
@@ -143,7 +368,7 @@ function PlayersTab() {
             </thead>
             <tbody>
               {FEATURED_LISTINGS.map((l) => (
-                <tr key={l.player.id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
+                <tr key={l.player.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td className="px-4 py-3 font-bold text-brand-gold">{l.player.number}</td>
                   <td className="px-4 py-3 font-semibold text-white">{l.player.name}</td>
                   <td className="px-4 py-3 text-blue-200/60">{l.player.country}</td>
@@ -208,7 +433,11 @@ function ProductsTab() {
             {p.description && <p className="text-xs text-blue-200/40 mb-3 line-clamp-2">{p.description}</p>}
             <div className="flex items-center justify-between">
               <span className="text-lg font-black text-white">{formatPrice(p.price)}</span>
-              <span className={cn("text-xs font-semibold px-2 py-1 rounded-full", p.stock > 10 ? "bg-green-500/20 text-green-400" : p.stock > 0 ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400")}>
+              <span className={cn("text-xs font-semibold px-2 py-1 rounded-full",
+                p.stock > 10 ? "bg-green-500/20 text-green-400" :
+                p.stock > 0  ? "bg-amber-500/20 text-amber-400" :
+                               "bg-red-500/20 text-red-400"
+              )}>
                 Stock: {p.stock}
               </span>
             </div>
@@ -221,9 +450,9 @@ function ProductsTab() {
 
 function MessagesTab() {
   const MOCK_MESSAGES = [
-    { id: 1, name: "Juan García", email: "juan@mail.com", subject: "intercambio", body: "Hola, tengo doble de Messi y busco Mbappé.", read: false, date: "hace 2hs" },
-    { id: 2, name: "María López", email: "maria@mail.com", subject: "compra", body: "¿Tienen disponible el pack de 50?", read: false, date: "hace 5hs" },
-    { id: 3, name: "Carlos Ruiz", email: "carlos@mail.com", subject: "cuenta", body: "No puedo iniciar sesión, me olvidé la contraseña.", read: true, date: "ayer" },
+    { id: 1, name: "Juan García",  email: "juan@mail.com",   subject: "intercambio", body: "Hola, tengo doble de Messi y busco Mbappé.",          read: false, date: "hace 2hs" },
+    { id: 2, name: "María López",  email: "maria@mail.com",  subject: "compra",      body: "¿Tienen disponible el pack de 50?",                   read: false, date: "hace 5hs" },
+    { id: 3, name: "Carlos Ruiz",  email: "carlos@mail.com", subject: "cuenta",      body: "No puedo iniciar sesión, me olvidé la contraseña.",   read: true,  date: "ayer"     },
   ];
 
   return (
@@ -255,9 +484,9 @@ function MessagesTab() {
 
 function UsersTab() {
   const MOCK_USERS = [
-    { id: 1, name: "Pablo Mendez", email: "pablo@mail.com", province: "Buenos Aires", listings: 12, trades: 8, joined: "Ene 2026" },
-    { id: 2, name: "Sofía Rodríguez", email: "sofia@mail.com", province: "Córdoba", listings: 7, trades: 5, joined: "Feb 2026" },
-    { id: 3, name: "Lucas González", email: "lucas@mail.com", province: "Santa Fe", listings: 3, trades: 1, joined: "Mar 2026" },
+    { id: 1, name: "Pablo Mendez",    email: "pablo@mail.com",  province: "Buenos Aires", listings: 12, trades: 8, joined: "Ene 2026" },
+    { id: 2, name: "Sofía Rodríguez", email: "sofia@mail.com",  province: "Córdoba",      listings: 7,  trades: 5, joined: "Feb 2026" },
+    { id: 3, name: "Lucas González",  email: "lucas@mail.com",  province: "Santa Fe",     listings: 3,  trades: 1, joined: "Mar 2026" },
   ];
 
   return (
@@ -273,7 +502,7 @@ function UsersTab() {
           </thead>
           <tbody>
             {MOCK_USERS.map((u) => (
-              <tr key={u.id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
+              <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-3 font-semibold text-white">{u.name}</td>
                 <td className="px-4 py-3 text-blue-200/60 text-xs">{u.email}</td>
                 <td className="px-4 py-3 text-blue-200/60">{u.province}</td>
@@ -299,21 +528,21 @@ export default function AdminPage() {
 
   const tabContent: Record<AdminTab, React.ReactNode> = {
     dashboard: <DashboardTab />,
-    players: <PlayersTab />,
+    ventas:    <VentasTab />,
+    players:   <PlayersTab />,
     listings: (
       <div className="glass-card p-8 text-center text-blue-200/40">
         <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
         <p>Gestión de publicaciones en desarrollo</p>
       </div>
     ),
-    products: <ProductsTab />,
-    messages: <MessagesTab />,
-    users: <UsersTab />,
+    products:  <ProductsTab />,
+    messages:  <MessagesTab />,
+    users:     <UsersTab />,
   };
 
   return (
     <div className="min-h-screen bg-brand-dark">
-      {/* Admin header */}
       <div className="bg-gradient-to-r from-violet-900/50 to-brand-navy border-b border-white/5">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex items-center gap-3">
@@ -348,6 +577,11 @@ export default function AdminPage() {
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
                     {tab.label}
+                    {tab.id === "ventas" && (
+                      <span className="ml-auto text-[10px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">
+                        {INITIAL_ORDERS.filter((o) => o.status === "PENDING").length}
+                      </span>
+                    )}
                   </button>
                 );
               })}
