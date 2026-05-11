@@ -44,19 +44,24 @@ export default function Hero() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-none">
-            Completá tu
-            <br />
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
+            Hacé el{" "}
             <span className="bg-gradient-to-r from-brand-gold via-yellow-300 to-brand-gold bg-clip-text text-transparent">
-              álbum
-            </span>{" "}
-            juntos
+              cambiazo
+            </span>
+            <br />
+            de tus figuritas
+            <br />
+            del{" "}
+            <span className="bg-gradient-to-r from-brand-gold via-yellow-300 to-brand-gold bg-clip-text text-transparent">
+              Mundial 2026
+            </span>
           </h1>
 
           <p className="mt-6 text-lg sm:text-xl text-blue-200/70 max-w-2xl leading-relaxed">
-            Intercambiá tus figuritas dobles, comprá las que te faltan o vendé lo que sobra. La plataforma más
-            grande de Argentina para completar el álbum del{" "}
-            <strong className="text-white">FIFA World Cup 2026™</strong>.
+            Intercambiá tus dobles, comprá las que te faltan y vendé lo que sobra.
+            La plataforma argentina para completar el álbum{" "}
+            <strong className="text-white">Panini FIFA World Cup 2026™</strong>.
           </p>
 
           {/* CTAs */}
