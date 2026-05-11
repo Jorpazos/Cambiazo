@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import NextAuthProvider from "@/components/providers/NextAuthProvider";
 
 export const metadata: Metadata = {
   title: "Cambiazo - Intercambio de Figuritas Mundial 2026",
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className="min-h-screen flex flex-col bg-brand-dark">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <NextAuthProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </NextAuthProvider>
       </body>
     </html>
   );
