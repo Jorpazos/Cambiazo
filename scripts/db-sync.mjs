@@ -7,10 +7,10 @@
 
 import { spawnSync } from "node:child_process";
 
-const url = process.env.POSTGRES_PRISMA_URL ?? process.env.DATABASE_URL;
+const url = process.env.DATABASE_URL ?? process.env.POSTGRES_PRISMA_URL;
 
 if (!url) {
-  console.log("[db-sync] No POSTGRES_PRISMA_URL / DATABASE_URL set — skipping schema sync.");
+  console.log("[db-sync] No DATABASE_URL / POSTGRES_PRISMA_URL set — skipping schema sync.");
   process.exit(0);
 }
 
