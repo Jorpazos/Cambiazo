@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import { Mail, Phone, MapPin, Calendar, FileText, Save, User as UserIcon, CheckCircle, AlertCircle } from "lucide-react";
 
 const PROVINCES = [
@@ -21,6 +20,12 @@ type ProfileForm = {
   city: string;
   birthDate: string;
   bio: string;
+};
+
+type ProfileData = ProfileForm & {
+  email: string;
+  name: string;
+  avatar: string | null;
 };
 
 const EMPTY_FORM: ProfileForm = {
@@ -42,7 +47,7 @@ function splitName(fullName: string | null | undefined) {
 
 export default function PerfilPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -50,23 +55,31 @@ export default function PerfilPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/login");
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    if (status !== "authenticated") return;
-
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/perfil");
+        const res = await fetch("/api/perfil", { cache: "no-store" });
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
         if (!res.ok) throw new Error("No se pudo cargar el perfil.");
         const { user } = await res.json();
         if (cancelled) return;
 
-        const fallback = splitName(session?.user?.name);
+        const fallback = splitName(user.name);
+        setProfile({
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          firstName: user.firstName ?? fallback.firstName,
+          lastName: user.lastName ?? fallback.lastName,
+          phone: user.phone ?? "",
+          province: user.province ?? "",
+          city: user.city ?? "",
+          birthDate: user.birthDate ? user.birthDate.slice(0, 10) : "",
+          bio: user.bio ?? "",
+        });
         setForm({
           firstName: user.firstName ?? fallback.firstName,
           lastName: user.lastName ?? fallback.lastName,
@@ -86,7 +99,7 @@ export default function PerfilPage() {
     return () => {
       cancelled = true;
     };
-  }, [status, session?.user?.name]);
+  }, [router]);
 
   const handleChange = (field: keyof ProfileForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -117,7 +130,7 @@ export default function PerfilPage() {
     }
   };
 
-  if (status === "loading" || !loaded) {
+  if (!loaded || !profile) {
     return (
       <div className="min-h-screen bg-brand-dark flex items-center justify-center">
         <svg className="h-8 w-8 animate-spin text-blue-400" viewBox="0 0 24 24" fill="none">
@@ -127,6 +140,9 @@ export default function PerfilPage() {
       </div>
     );
   }
+
+  const initial = (profile.name || profile.email).charAt(0).toUpperCase();
+  const isGoogleAvatar = profile.avatar?.includes("googleusercontent.com") ?? false;
 
   return (
     <div className="min-h-screen bg-brand-dark">
@@ -138,14 +154,13 @@ export default function PerfilPage() {
           </p>
         </div>
 
-        {/* Account info from Google (read-only) */}
         <div className="glass-card p-6 mb-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-gold mb-4">Cuenta vinculada</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand-gold mb-4">Cuenta</p>
           <div className="flex items-center gap-4">
-            {session?.user?.image ? (
+            {profile.avatar ? (
               <Image
-                src={session.user.image}
-                alt={session.user.name ?? "Avatar"}
+                src={profile.avatar}
+                alt={profile.name}
                 width={64}
                 height={64}
                 className="h-16 w-16 rounded-xl object-cover ring-2 ring-white/10"
@@ -153,21 +168,22 @@ export default function PerfilPage() {
               />
             ) : (
               <div className="h-16 w-16 rounded-xl bg-brand-blue flex items-center justify-center text-2xl font-bold text-white">
-                {session?.user?.name?.charAt(0).toUpperCase() ?? "U"}
+                {initial}
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-base font-bold text-white truncate">{session?.user?.name ?? "Sin nombre"}</p>
+              <p className="text-base font-bold text-white truncate">{profile.name || "Sin nombre"}</p>
               <p className="text-sm text-blue-200/60 flex items-center gap-1.5 mt-0.5">
                 <Mail className="h-3.5 w-3.5" />
-                <span className="truncate">{session?.user?.email}</span>
+                <span className="truncate">{profile.email}</span>
               </p>
-              <p className="text-xs text-blue-200/40 mt-1">Conectado con Google</p>
+              <p className="text-xs text-blue-200/40 mt-1">
+                {isGoogleAvatar ? "Conectado con Google" : "Registrado con email"}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Editable form */}
         <form onSubmit={handleSubmit} className="glass-card p-6 space-y-5">
           <div className="grid sm:grid-cols-2 gap-5">
             <div>

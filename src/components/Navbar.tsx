@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Menu, X, LogIn, UserPlus, User, LayoutDashboard, LogOut, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogoMark from "@/components/LogoMark";
@@ -15,12 +16,43 @@ const NAV_LINKS = [
   { href: "/#faq", label: "FAQ" },
 ];
 
+type MeUser = {
+  id: number;
+  email: string;
+  name: string;
+  firstName: string | null;
+  lastName: string | null;
+  avatar: string | null;
+  isAdmin: boolean;
+};
+
 export default function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<MeUser | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { data: session, status } = useSession();
-  const isLoggedIn = status === "authenticated" && !!session?.user;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/me", { cache: "no-store" });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!cancelled) setUser(data.user);
+      } catch {
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -38,19 +70,26 @@ export default function Navbar() {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } catch {
-      // ignore: NextAuth signOut below will still drop the session
+      // ignore
     }
-    await signOut({ callbackUrl: "/" });
+    try {
+      await signOut({ redirect: false });
+    } catch {
+      // ignore — no NextAuth session for email users
+    }
+    setUser(null);
+    router.replace("/");
+    router.refresh();
   };
 
-  const userInitial = session?.user?.name?.charAt(0).toUpperCase() ?? session?.user?.email?.charAt(0).toUpperCase() ?? "U";
-  const firstName = session?.user?.name?.split(" ")[0] ?? session?.user?.email ?? "Usuario";
+  const isLoggedIn = loaded && !!user;
+  const displayName = user?.firstName || user?.name?.split(" ")[0] || user?.email || "Usuario";
+  const userInitial = (user?.firstName || user?.name || user?.email || "U").charAt(0).toUpperCase();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/5 bg-brand-dark/90 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <LogoMark className="h-9 w-9 drop-shadow-lg group-hover:scale-105 transition-transform duration-200" />
             <span className="text-xl font-black tracking-tight text-white">
@@ -61,7 +100,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
               <Link
@@ -74,9 +112,10 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop auth area */}
           <div className="hidden md:flex items-center gap-2">
-            {isLoggedIn ? (
+            {!loaded ? (
+              <div className="h-8 w-24 rounded-lg bg-white/5 animate-pulse" />
+            ) : isLoggedIn ? (
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
@@ -84,10 +123,10 @@ export default function Navbar() {
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
                 >
-                  {session?.user?.image ? (
+                  {user?.avatar ? (
                     <Image
-                      src={session.user.image}
-                      alt={session.user.name ?? "Avatar"}
+                      src={user.avatar}
+                      alt={user.name}
                       width={28}
                       height={28}
                       className="h-7 w-7 rounded-lg object-cover"
@@ -99,7 +138,7 @@ export default function Navbar() {
                     </div>
                   )}
                   <span className="text-sm font-semibold text-white max-w-[120px] truncate">
-                    {firstName}
+                    {displayName}
                   </span>
                   <ChevronDown className={cn("h-4 w-4 text-blue-200/60 transition-transform", menuOpen && "rotate-180")} />
                 </button>
@@ -110,8 +149,8 @@ export default function Navbar() {
                     className="absolute right-0 mt-2 w-56 rounded-xl border border-white/10 bg-brand-card/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-white/5">
-                      <p className="text-sm font-semibold text-white truncate">{session?.user?.name ?? "Usuario"}</p>
-                      <p className="text-xs text-blue-200/50 truncate">{session?.user?.email}</p>
+                      <p className="text-sm font-semibold text-white truncate">{user?.name ?? "Usuario"}</p>
+                      <p className="text-xs text-blue-200/50 truncate">{user?.email}</p>
                     </div>
                     <Link
                       href="/dashboard"
@@ -153,7 +192,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <button
             className="md:hidden p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
             onClick={() => setOpen(!open)}
@@ -164,7 +202,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <div
         className={cn(
           "md:hidden border-t border-white/5 bg-[#07091a]/95 backdrop-blur-xl overflow-hidden transition-all duration-300",
@@ -174,10 +211,10 @@ export default function Navbar() {
         <div className="px-4 py-4 space-y-1">
           {isLoggedIn && (
             <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-lg bg-white/5 border border-white/10">
-              {session?.user?.image ? (
+              {user?.avatar ? (
                 <Image
-                  src={session.user.image}
-                  alt={session.user.name ?? "Avatar"}
+                  src={user.avatar}
+                  alt={user.name}
                   width={36}
                   height={36}
                   className="h-9 w-9 rounded-lg object-cover"
@@ -189,8 +226,8 @@ export default function Navbar() {
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{session?.user?.name ?? "Usuario"}</p>
-                <p className="text-xs text-blue-200/50 truncate">{session?.user?.email}</p>
+                <p className="text-sm font-semibold text-white truncate">{user?.name ?? "Usuario"}</p>
+                <p className="text-xs text-blue-200/50 truncate">{user?.email}</p>
               </div>
             </div>
           )}
