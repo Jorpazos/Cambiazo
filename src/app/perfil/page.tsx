@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { Mail, Phone, MapPin, Calendar, FileText, Save, User as UserIcon, CheckCircle, Info } from "lucide-react";
+import { Mail, Phone, MapPin, Calendar, FileText, Save, User as UserIcon, CheckCircle, AlertCircle } from "lucide-react";
 
 const PROVINCES = [
   "Buenos Aires", "CABA", "Catamarca", "Chaco", "Chubut", "Córdoba",
@@ -33,10 +33,6 @@ const EMPTY_FORM: ProfileForm = {
   bio: "",
 };
 
-function storageKey(email: string | null | undefined) {
-  return email ? `cambiazo:profile:${email}` : null;
-}
-
 function splitName(fullName: string | null | undefined) {
   if (!fullName) return { firstName: "", lastName: "" };
   const parts = fullName.trim().split(/\s+/);
@@ -49,7 +45,9 @@ export default function PerfilPage() {
   const { data: session, status } = useSession();
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
   const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -59,35 +57,64 @@ export default function PerfilPage() {
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    const key = storageKey(session?.user?.email);
-    if (!key) return;
 
-    const stored = window.localStorage.getItem(key);
-    if (stored) {
+    let cancelled = false;
+    (async () => {
       try {
-        setForm({ ...EMPTY_FORM, ...JSON.parse(stored) });
+        const res = await fetch("/api/perfil");
+        if (!res.ok) throw new Error("No se pudo cargar el perfil.");
+        const { user } = await res.json();
+        if (cancelled) return;
+
+        const fallback = splitName(session?.user?.name);
+        setForm({
+          firstName: user.firstName ?? fallback.firstName,
+          lastName: user.lastName ?? fallback.lastName,
+          phone: user.phone ?? "",
+          province: user.province ?? "",
+          city: user.city ?? "",
+          birthDate: user.birthDate ? user.birthDate.slice(0, 10) : "",
+          bio: user.bio ?? "",
+        });
       } catch {
-        setForm(EMPTY_FORM);
+        if (!cancelled) setError("No se pudo cargar el perfil. Recargá la página.");
+      } finally {
+        if (!cancelled) setLoaded(true);
       }
-    } else {
-      const { firstName, lastName } = splitName(session?.user?.name);
-      setForm({ ...EMPTY_FORM, firstName, lastName });
-    }
-    setLoaded(true);
-  }, [status, session?.user?.email, session?.user?.name]);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [status, session?.user?.name]);
 
   const handleChange = (field: keyof ProfileForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setSaved(false);
+    setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const key = storageKey(session?.user?.email);
-    if (!key) return;
-    window.localStorage.setItem(key, JSON.stringify(form));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/perfil", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "No se pudo guardar.");
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo guardar.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (status === "loading" || !loaded) {
@@ -138,15 +165,6 @@ export default function PerfilPage() {
               <p className="text-xs text-blue-200/40 mt-1">Conectado con Google</p>
             </div>
           </div>
-        </div>
-
-        {/* Notice: localStorage warning */}
-        <div className="flex gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 mb-6">
-          <Info className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-200/80 leading-relaxed">
-            Estos datos quedan guardados solo en este navegador hasta que conectemos la base de datos.
-            Vas a tener que volver a cargarlos si entrás desde otro dispositivo.
-          </p>
         </div>
 
         {/* Editable form */}
@@ -261,10 +279,17 @@ export default function PerfilPage() {
             <p className="mt-1 text-xs text-blue-200/40 text-right">{form.bio.length}/280</p>
           </div>
 
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2.5 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
           <div className="flex items-center gap-3 pt-2">
-            <button type="submit" className="btn-primary py-2.5 px-6">
+            <button type="submit" disabled={saving} className="btn-primary py-2.5 px-6 disabled:opacity-60">
               <Save className="h-4 w-4" />
-              Guardar cambios
+              {saving ? "Guardando..." : "Guardar cambios"}
             </button>
             {saved && (
               <span className="flex items-center gap-1.5 text-sm text-green-400">

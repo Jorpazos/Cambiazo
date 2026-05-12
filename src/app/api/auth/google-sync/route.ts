@@ -1,10 +1,12 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { signToken, COOKIE_NAME } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 // Called after Google OAuth succeeds — creates our custom JWT cookie
+// and ensures the user exists in our DB.
 export async function GET() {
   const session = await getServerSession(authOptions);
 
@@ -12,15 +14,28 @@ export async function GET() {
     redirect("/login?error=google");
   }
 
-  // Derive a stable numeric ID from the email (mock; replace with DB lookup in prod)
-  const userId = Math.abs(
-    session.user.email.split("").reduce((acc, c) => acc * 31 + c.charCodeAt(0), 0) % 1_000_000
-  );
+  const email = session.user.email;
+  const name = session.user.name ?? email.split("@")[0];
+  const image = session.user.image ?? undefined;
+
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      name,
+      avatar: image,
+    },
+    create: {
+      email,
+      name,
+      avatar: image,
+      verified: true,
+    },
+  });
 
   const token = signToken({
-    userId,
-    email: session.user.email,
-    isAdmin: false,
+    userId: user.id,
+    email: user.email,
+    isAdmin: user.isAdmin,
   });
 
   cookies().set(COOKIE_NAME, token, {
