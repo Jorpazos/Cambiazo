@@ -80,11 +80,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[register-email] sendVerificationEmail failed:", err);
     return NextResponse.json(
-      {
-        error:
-          "No pudimos enviar el código de verificación. " +
-          "Revisá las variables SMTP_* en Vercel o probá de nuevo en unos minutos.",
-      },
+      { error: "No pudimos enviar el código de verificación. Probá de nuevo en unos minutos." },
       { status: 502 },
     );
   }
