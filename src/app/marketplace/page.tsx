@@ -3,16 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Filter, MapPin, SlidersHorizontal, Repeat2, ShoppingBag, BookOpen, ArrowRight } from "lucide-react";
-import { FEATURED_LISTINGS } from "@/lib/mockData";
+import { Search, MapPin, Repeat2, ShoppingBag, BookOpen, ArrowRight } from "lucide-react";
 import { formatPrice, cn } from "@/lib/utils";
-import type { ListingType } from "@/types";
+import type { Listing, ListingType } from "@/types";
 
-const ALL_LISTINGS = [
-  ...FEATURED_LISTINGS,
-  ...FEATURED_LISTINGS.map((l) => ({ ...l, id: l.id + 100, type: "VENDO" as ListingType, price: 400 + Math.random() * 600 })),
-  ...FEATURED_LISTINGS.map((l) => ({ ...l, id: l.id + 200, type: "BUSCO" as ListingType })),
-].sort(() => Math.random() - 0.5);
+const ALL_LISTINGS: Listing[] = [];
 
 const TYPE_ICONS = { CAMBIO: Repeat2, VENDO: ShoppingBag, BUSCO: BookOpen };
 const TYPE_LABEL = { CAMBIO: "Cambio", VENDO: "Vendo", BUSCO: "Busco" };

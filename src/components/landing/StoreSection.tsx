@@ -41,6 +41,13 @@ export default function StoreSection({ products }: { products: StoreProduct[] })
           </div>
         </div>
 
+        {products.length === 0 ? (
+          <div className="glass-card p-12 text-center">
+            <Package className="h-10 w-10 mx-auto mb-3 text-blue-200/30" />
+            <p className="text-white/80 font-semibold mb-1">Tienda próximamente</p>
+            <p className="text-sm text-blue-200/50">Estamos preparando sobres, packs y álbumes para vos.</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {products.map((product) => {
             const Icon = TYPE_ICONS[product.type] ?? Package;
@@ -91,6 +98,7 @@ export default function StoreSection({ products }: { products: StoreProduct[] })
             );
           })}
         </div>
+        )}
 
         {/* Trust badges */}
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">

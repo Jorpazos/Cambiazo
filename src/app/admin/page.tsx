@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import {
-  Users, Package, Image as ImageIcon, Plus, Edit3, Trash2,
-  BarChart3, ShoppingBag, MessageSquare, Eye, Upload,
-  ShoppingCart, CheckCircle, Truck, XCircle,
+  Users, Package, Image as ImageIcon, Plus,
+  BarChart3, ShoppingBag, MessageSquare, Upload,
+  ShoppingCart, CheckCircle, Truck, XCircle, Inbox,
 } from "lucide-react";
-import { FEATURED_LISTINGS, STORE_PRODUCTS } from "@/lib/mockData";
 import { formatPrice, cn } from "@/lib/utils";
 
 type AdminTab = "dashboard" | "ventas" | "players" | "listings" | "products" | "messages" | "users";
@@ -31,23 +30,14 @@ const TABS: { id: AdminTab; label: string; icon: React.ComponentType<{ className
   { id: "users",     label: "Usuarios",      icon: Users },
 ];
 
-const MOCK_STATS = [
-  { label: "Usuarios totales",     value: "12.421", change: "+84 esta semana",      color: "text-blue-400" },
-  { label: "Publicaciones activas",value: "4.283",  change: "+127 hoy",             color: "text-green-400" },
-  { label: "Mensajes recibidos",   value: "38",     change: "12 sin leer",          color: "text-amber-400" },
-  { label: "Ventas del mes",       value: "$284.000",change: "+23% vs mes anterior",color: "text-violet-400" },
+const STATS = [
+  { label: "Usuarios totales",      value: "0", change: "Sin datos",  color: "text-blue-400"   },
+  { label: "Publicaciones activas", value: "0", change: "Sin datos",  color: "text-green-400"  },
+  { label: "Mensajes recibidos",    value: "0", change: "Sin datos",  color: "text-amber-400"  },
+  { label: "Ventas del mes",        value: "$0",change: "Sin datos",  color: "text-violet-400" },
 ];
 
-const INITIAL_ORDERS: MockOrder[] = [
-  { id: 1001, status: "PENDING",   total: 2500,  createdAt: "2026-05-08T10:30:00Z", user: { name: "Pablo Mendez",    email: "pablo@mail.com",  province: "Bs. As."  }, product: "Pack x25 Figuritas"   },
-  { id: 1002, status: "CONFIRMED", total: 4500,  createdAt: "2026-05-07T15:45:00Z", user: { name: "Sofía Rodríguez", email: "sofia@mail.com",  province: "Córdoba"  }, product: "Pack x50 Figuritas"   },
-  { id: 1003, status: "SHIPPED",   total: 600,   createdAt: "2026-05-06T09:20:00Z", user: { name: "Lucas González",  email: "lucas@mail.com",  province: "Santa Fe" }, product: "Sobre x5 Figuritas"   },
-  { id: 1004, status: "DELIVERED", total: 3500,  createdAt: "2026-05-05T14:10:00Z", user: { name: "María López",     email: "maria@mail.com",  province: "Mendoza"  }, product: "Álbum Vacío Oficial"  },
-  { id: 1005, status: "PENDING",   total: 95000, createdAt: "2026-05-08T08:00:00Z", user: { name: "Carlos Ruiz",     email: "carlos@mail.com", province: "Tucumán"  }, product: "Álbum Completo"       },
-  { id: 1006, status: "CANCELLED", total: 1200,  createdAt: "2026-05-04T11:30:00Z", user: { name: "Ana Martínez",    email: "ana@mail.com",    province: "Rosario"  }, product: "Sobre x5 Figuritas"   },
-  { id: 1007, status: "CONFIRMED", total: 95000, createdAt: "2026-05-03T16:00:00Z", user: { name: "Martín Sosa",     email: "martin@mail.com", province: "Córdoba"  }, product: "Álbum Completo"       },
-  { id: 1008, status: "PENDING",   total: 600,   createdAt: "2026-05-08T11:55:00Z", user: { name: "Laura Giménez",   email: "laura@mail.com",  province: "Bs. As."  }, product: "Sobre x5 Figuritas"   },
-];
+const INITIAL_ORDERS: MockOrder[] = [];
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING:   "Pendiente",
@@ -252,7 +242,7 @@ function DashboardTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {MOCK_STATS.map((s) => (
+        {STATS.map((s) => (
           <div key={s.label} className="glass-card p-5">
             <p className="text-xs text-blue-200/50 mb-1">{s.label}</p>
             <p className="text-2xl font-black text-white">{s.value}</p>
@@ -263,27 +253,9 @@ function DashboardTab() {
 
       <div className="glass-card p-5">
         <h3 className="font-bold text-white mb-4">Últimas publicaciones</h3>
-        <div className="space-y-3">
-          {FEATURED_LISTINGS.slice(0, 4).map((l) => (
-            <div key={l.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-brand-blue/20 flex items-center justify-center text-xs font-bold text-blue-400">
-                  {l.player.number}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{l.player.name}</p>
-                  <p className="text-xs text-blue-200/50">{l.user.name} · {l.player.country}</p>
-                </div>
-              </div>
-              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", {
-                "bg-blue-500/20 text-blue-400":   l.type === "CAMBIO",
-                "bg-green-500/20 text-green-400": l.type === "VENDO",
-                "bg-amber-500/20 text-amber-400": l.type === "BUSCO",
-              })}>
-                {l.type}
-              </span>
-            </div>
-          ))}
+        <div className="py-8 text-center text-blue-200/40 text-sm">
+          <Inbox className="h-8 w-8 mx-auto mb-2 opacity-30" />
+          Sin publicaciones todavía
         </div>
       </div>
     </div>
@@ -353,50 +325,10 @@ function PlayersTab() {
         </div>
       )}
 
-      <div className="glass-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/5 text-left">
-                <th className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">#</th>
-                <th className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">Jugador</th>
-                <th className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">País</th>
-                <th className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">Posición</th>
-                <th className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">Foto</th>
-                <th className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {FEATURED_LISTINGS.map((l) => (
-                <tr key={l.player.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="px-4 py-3 font-bold text-brand-gold">{l.player.number}</td>
-                  <td className="px-4 py-3 font-semibold text-white">{l.player.name}</td>
-                  <td className="px-4 py-3 text-blue-200/60">{l.player.country}</td>
-                  <td className="px-4 py-3 text-blue-200/60">{l.player.position ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    {l.player.image ? (
-                      <a href={l.player.image} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-xs">
-                        <Eye className="h-3 w-3" /> Ver
-                      </a>
-                    ) : (
-                      <span className="text-xs text-red-400/70">Sin foto</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">
-                        <Edit3 className="h-3.5 w-3.5" />
-                      </button>
-                      <button className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="glass-card p-12 text-center text-blue-200/40">
+        <ImageIcon className="h-10 w-10 mx-auto mb-3 opacity-30" />
+        <p className="text-white/80 font-semibold mb-1">Sin jugadores cargados</p>
+        <p className="text-sm">Agregá el primero con el botón de arriba.</p>
       </div>
     </div>
   );
@@ -413,112 +345,31 @@ function ProductsTab() {
         </button>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {STORE_PRODUCTS.map((p) => (
-          <div key={p.id} className="glass-card p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="font-bold text-white text-sm">{p.name}</p>
-                <p className="text-xs text-blue-200/50 mt-0.5">{p.type}</p>
-              </div>
-              <div className="flex gap-2">
-                <button className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">
-                  <Edit3 className="h-3.5 w-3.5" />
-                </button>
-                <button className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-            {p.description && <p className="text-xs text-blue-200/40 mb-3 line-clamp-2">{p.description}</p>}
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-black text-white">{formatPrice(p.price)}</span>
-              <span className={cn("text-xs font-semibold px-2 py-1 rounded-full",
-                p.stock > 10 ? "bg-green-500/20 text-green-400" :
-                p.stock > 0  ? "bg-amber-500/20 text-amber-400" :
-                               "bg-red-500/20 text-red-400"
-              )}>
-                Stock: {p.stock}
-              </span>
-            </div>
-          </div>
-        ))}
+      <div className="glass-card p-12 text-center text-blue-200/40">
+        <ShoppingBag className="h-10 w-10 mx-auto mb-3 opacity-30" />
+        <p className="text-white/80 font-semibold mb-1">Sin productos cargados</p>
+        <p className="text-sm">Agregá el primer producto a la tienda.</p>
       </div>
     </div>
   );
 }
 
 function MessagesTab() {
-  const MOCK_MESSAGES = [
-    { id: 1, name: "Juan García",  email: "juan@mail.com",   subject: "intercambio", body: "Hola, tengo doble de Messi y busco Mbappé.",          read: false, date: "hace 2hs" },
-    { id: 2, name: "María López",  email: "maria@mail.com",  subject: "compra",      body: "¿Tienen disponible el pack de 50?",                   read: false, date: "hace 5hs" },
-    { id: 3, name: "Carlos Ruiz",  email: "carlos@mail.com", subject: "cuenta",      body: "No puedo iniciar sesión, me olvidé la contraseña.",   read: true,  date: "ayer"     },
-  ];
-
   return (
-    <div className="space-y-3">
-      {MOCK_MESSAGES.map((msg) => (
-        <div key={msg.id} className={cn("glass-card p-4 hover:border-white/15 transition-colors cursor-pointer", !msg.read && "border-brand-blue/30")}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3 min-w-0">
-              {!msg.read && <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-brand-gold" />}
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-white text-sm">{msg.name}</p>
-                  <span className="text-xs text-blue-200/40">{msg.email}</span>
-                </div>
-                <p className="text-xs text-blue-200/60 mt-0.5 capitalize">Asunto: {msg.subject}</p>
-                <p className="text-sm text-blue-200/50 mt-1 line-clamp-2">{msg.body}</p>
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-xs text-blue-200/40">{msg.date}</p>
-              {!msg.read && <span className="text-xs font-bold text-brand-gold">Nuevo</span>}
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className="glass-card p-12 text-center text-blue-200/40">
+      <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-30" />
+      <p className="text-white/80 font-semibold mb-1">Sin mensajes</p>
+      <p className="text-sm">Los mensajes del formulario de contacto aparecerán acá.</p>
     </div>
   );
 }
 
 function UsersTab() {
-  const MOCK_USERS = [
-    { id: 1, name: "Pablo Mendez",    email: "pablo@mail.com",  province: "Buenos Aires", listings: 12, trades: 8, joined: "Ene 2026" },
-    { id: 2, name: "Sofía Rodríguez", email: "sofia@mail.com",  province: "Córdoba",      listings: 7,  trades: 5, joined: "Feb 2026" },
-    { id: 3, name: "Lucas González",  email: "lucas@mail.com",  province: "Santa Fe",     listings: 3,  trades: 1, joined: "Mar 2026" },
-  ];
-
   return (
-    <div className="glass-card overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/5 text-left">
-              {["Usuario", "Email", "Provincia", "Publicaciones", "Intercambios", "Desde", "Acciones"].map((h) => (
-                <th key={h} className="px-4 py-3 text-xs font-semibold text-blue-200/50 uppercase tracking-wider">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {MOCK_USERS.map((u) => (
-              <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                <td className="px-4 py-3 font-semibold text-white">{u.name}</td>
-                <td className="px-4 py-3 text-blue-200/60 text-xs">{u.email}</td>
-                <td className="px-4 py-3 text-blue-200/60">{u.province}</td>
-                <td className="px-4 py-3 text-center font-bold text-white">{u.listings}</td>
-                <td className="px-4 py-3 text-center text-green-400 font-bold">{u.trades}</td>
-                <td className="px-4 py-3 text-blue-200/40 text-xs">{u.joined}</td>
-                <td className="px-4 py-3">
-                  <button className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="glass-card p-12 text-center text-blue-200/40">
+      <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
+      <p className="text-white/80 font-semibold mb-1">Sin usuarios registrados</p>
+      <p className="text-sm">Acá vas a ver el listado de usuarios cuando se conecten al sistema.</p>
     </div>
   );
 }

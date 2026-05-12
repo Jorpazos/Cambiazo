@@ -6,7 +6,7 @@ import SafetySection from "@/components/landing/SafetySection";
 import StoreSection from "@/components/landing/StoreSection";
 import FAQ from "@/components/landing/FAQ";
 import ContactSection from "@/components/landing/ContactSection";
-import { FEATURED_LISTINGS, STORE_PRODUCTS, FAQ_ITEMS } from "@/lib/mockData";
+import { FAQ_ITEMS } from "@/lib/faqContent";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cambiazomundial2026.vercel.app";
 
@@ -85,10 +85,10 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Hero />
-      <FeaturedListings listings={FEATURED_LISTINGS} />
+      <FeaturedListings listings={[]} />
       <HowItWorks />
       <SafetySection />
-      <StoreSection products={STORE_PRODUCTS} />
+      <StoreSection products={[]} />
       <FAQ items={FAQ_ITEMS} />
       <ContactSection />
     </>

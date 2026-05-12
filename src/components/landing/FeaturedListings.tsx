@@ -151,11 +151,19 @@ export default function FeaturedListings({ listings }: { listings: Listing[] }) 
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {listings.map((listing) => (
-            <StickerCard key={listing.id} listing={listing} />
-          ))}
-        </div>
+        {listings.length === 0 ? (
+          <div className="glass-card p-12 text-center">
+            <Search className="h-10 w-10 mx-auto mb-3 text-blue-200/30" />
+            <p className="text-white/80 font-semibold mb-1">Todavía no hay publicaciones</p>
+            <p className="text-sm text-blue-200/50">Sé el primero en publicar tus figuritas.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {listings.map((listing) => (
+              <StickerCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

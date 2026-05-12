@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -27,39 +26,17 @@ const PLAYERS = [
   { name: "Florian Wirtz", country: "Alemania", number: 502, position: "Mediocampista", section: "GER" },
 ];
 
+const STORE_PRODUCTS = [
+  { name: "Sobre x5 Figuritas", description: "5 figuritas al azar del álbum oficial.", price: 600, type: "SOBRE", stock: 200 },
+  { name: "Pack x25 Figuritas", description: "25 figuritas. Mejor precio por cantidad.", price: 2500, type: "PACK", stock: 80 },
+  { name: "Pack x50 Figuritas", description: "50 figuritas sin repetir.", price: 4500, type: "PACK", stock: 40 },
+  { name: "Álbum Vacío Oficial", description: "Álbum oficial del Mundial 2026 sin figuritas.", price: 3500, type: "ALBUM", stock: 25 },
+  { name: "Álbum Completo", description: "El álbum con las 980 figuritas completas.", price: 95000, type: "ALBUM", stock: 3 },
+];
+
 async function main() {
-  console.log("🌱 Seeding database...");
+  console.log("🌱 Seeding catalog data (players + store products)...");
 
-  // Admin user
-  const adminPass = await bcrypt.hash("admin123", 12);
-  await prisma.user.upsert({
-    where: { email: "admin@cambiazo.ar" },
-    update: {},
-    create: {
-      email: "admin@cambiazo.ar",
-      password: adminPass,
-      name: "Admin Cambiazo",
-      isAdmin: true,
-      verified: true,
-    },
-  });
-
-  // Demo user
-  const demoPass = await bcrypt.hash("demo123", 12);
-  await prisma.user.upsert({
-    where: { email: "demo@cambiazo.ar" },
-    update: {},
-    create: {
-      email: "demo@cambiazo.ar",
-      password: demoPass,
-      name: "Demo User",
-      province: "Buenos Aires",
-      city: "Pilar",
-      verified: true,
-    },
-  });
-
-  // Players
   for (const player of PLAYERS) {
     await prisma.player.upsert({
       where: { id: player.number },
@@ -68,16 +45,7 @@ async function main() {
     });
   }
 
-  // Store products
-  const products = [
-    { name: "Sobre x5 Figuritas", description: "5 figuritas al azar del álbum oficial.", price: 600, type: "SOBRE", stock: 200 },
-    { name: "Pack x25 Figuritas", description: "25 figuritas. Mejor precio por cantidad.", price: 2500, type: "PACK", stock: 80 },
-    { name: "Pack x50 Figuritas", description: "50 figuritas sin repetir.", price: 4500, type: "PACK", stock: 40 },
-    { name: "Álbum Vacío Oficial", description: "Álbum oficial del Mundial 2026 sin figuritas.", price: 3500, type: "ALBUM", stock: 25 },
-    { name: "Álbum Completo", description: "El álbum con las 980 figuritas completas.", price: 95000, type: "ALBUM", stock: 3 },
-  ];
-
-  for (const product of products) {
+  for (const product of STORE_PRODUCTS) {
     await prisma.storeProduct.create({ data: product }).catch(() => {});
   }
 
